@@ -1178,6 +1178,7 @@ class WorldTracker {
             while let nextInputState = controller.input.nextInputState() {
                 
                 let buttons = nextInputState.buttons
+                let physicalButtons = controller.physicalInputProfile.buttons
                 let dpads = nextInputState.dpads
                 let axes = nextInputState.axes
                                 
@@ -1209,27 +1210,18 @@ class WorldTracker {
                             alvr_send_button(WorldTracker.leftThumbstickX, scalarVal(dpads["Thumbstick"]?.xAxis.value ?? 0.0))
                             alvr_send_button(WorldTracker.leftThumbstickY, scalarVal(dpads["Thumbstick"]?.yAxis.value ?? 0.0))
                             if leftPinchTrigger <= 0.0 {
-                                alvr_send_button(WorldTracker.leftTriggerClick, boolVal(buttons["Trigger"]?.pressedInput.isPressed ?? false))
-                                alvr_send_button(WorldTracker.leftTriggerValue, scalarVal(buttons["Trigger"]?.forceInput?.value ?? ((buttons["Trigger"]?.pressedInput.isPressed ?? false) ? 1.0 : 0.0)))
+                                alvr_send_button(WorldTracker.leftTriggerClick, boolVal(physicalButtons["Trigger"]?.isPressed ?? false))
+                                alvr_send_button(WorldTracker.leftTriggerValue, scalarVal(physicalButtons["Trigger"]?.value ?? ((physicalButtons["Trigger"]?.isPressed ?? false) ? 1.0 : 0.0)))
                             }
                             alvr_send_button(WorldTracker.leftSqueezeClick, boolVal(buttons["Grip"]?.pressedInput.isPressed ?? false))
                             alvr_send_button(WorldTracker.leftSqueezeValue, scalarVal(((buttons["Grip"]?.pressedInput.isPressed ?? false) ? 1.0 : 0.0)))
                             alvr_send_button(WorldTracker.leftSqueezeTouched, boolVal(buttons["Grip"]?.touchedInput?.isTouched ?? false))
-                            if buttons["Grip"]?.touchedInput?.isTouched ?? false { print ("Left Grip Touch")}
                             alvr_send_button(WorldTracker.leftButtonXTouched, boolVal(buttons["Button A"]?.touchedInput?.isTouched ?? false))
-                            if buttons["Button A"]?.touchedInput?.isTouched ?? false { print ("Left Button A Touch")}
-
                             alvr_send_button(WorldTracker.leftButtonYTouched, boolVal(buttons["Button B"]?.touchedInput?.isTouched ?? false))
-                            if buttons["Button B"]?.touchedInput?.isTouched ?? false { print ("Left Button B Touch")}
 
                             alvr_send_button(WorldTracker.leftThumbstickTouched, boolVal(buttons["Thumbstick Button"]?.touchedInput?.isTouched ?? false))
-                            if buttons["Thumbstick Button"]?.touchedInput?.isTouched ?? false { print ("Left Thumb Touch")}
-
                             alvr_send_button(WorldTracker.leftTriggerTouched, boolVal(buttons["Trigger"]?.touchedInput?.isTouched ?? false))
-                            if buttons["Trigger"]?.touchedInput?.isTouched ?? false { print ("Left Trigger Touch")}
-
                             alvr_send_button(WorldTracker.leftMenuTouched, boolVal(buttons["Button Menu"]?.touchedInput?.isTouched ?? false))
-                            if buttons["Button Menu"]?.touchedInput?.isTouched ?? false { print ("Left Menu Touch")}
 
                             alvr_send_button(WorldTracker.leftSystemTouched, boolVal(buttons["Button Menu"]?.touchedInput?.isTouched ?? false))
                             alvr_send_button(WorldTracker.leftMenuClick, boolVal(buttons["Button Menu"]?.pressedInput.isPressed ?? false))
@@ -1244,30 +1236,18 @@ class WorldTracker {
                             alvr_send_button(WorldTracker.rightThumbstickY, scalarVal(dpads["Thumbstick"]?.yAxis.value ?? 0.0))
 
                             if rightPinchTrigger <= 0.0 {
-                                alvr_send_button(WorldTracker.rightTriggerClick, boolVal(buttons["Trigger"]?.pressedInput.isPressed ?? false))
-                                alvr_send_button(WorldTracker.rightTriggerValue, scalarVal(buttons["Trigger"]?.forceInput?.value ?? ((buttons["Trigger"]?.pressedInput.isPressed ?? false) ? 1.0 : 0.0)))
+                                alvr_send_button(WorldTracker.rightTriggerClick, boolVal(physicalButtons["Trigger"]?.isPressed ?? false))
+                                alvr_send_button(WorldTracker.rightTriggerValue, scalarVal(physicalButtons["Trigger"]?.value ?? ((physicalButtons["Trigger"]?.isPressed ?? false) ? 1.0 : 0.0)))
                             }
 
                             alvr_send_button(WorldTracker.rightSqueezeClick, boolVal(buttons["Grip"]?.pressedInput.isPressed ?? false))
                             alvr_send_button(WorldTracker.rightSqueezeValue, scalarVal((buttons["Grip"]?.pressedInput.isPressed ?? false) ? 1.0 : 0.0))
                             alvr_send_button(WorldTracker.rightSqueezeTouched, boolVal(buttons["Grip"]?.touchedInput?.isTouched ?? false))
-                            if buttons["Grip"]?.touchedInput?.isTouched ?? false { print ("Right Grip Touch")}
-                           
                             alvr_send_button(WorldTracker.rightButtonATouched, boolVal(buttons["Button A"]?.touchedInput?.isTouched ?? false))
-                            if buttons["Button A"]?.touchedInput?.isTouched ?? false { print ("Right Button A Touch")}
-
                             alvr_send_button(WorldTracker.rightButtonBTouched, boolVal(buttons["Button B"]?.touchedInput?.isTouched ?? false))
-                            if buttons["Button B"]?.touchedInput?.isTouched ?? false { print ("Right Button B Touch")}
-
-                            
                             alvr_send_button(WorldTracker.rightThumbstickTouched, boolVal(buttons["Thumbstick Button"]?.touchedInput?.isTouched ?? false))
-                            if buttons["Thumbstick Button"]?.touchedInput?.isTouched ?? false { print ("Right Thumb Touch")}
-
                             alvr_send_button(WorldTracker.rightTriggerTouched, boolVal(buttons["Trigger"]?.touchedInput?.isTouched ?? false))
-                            if buttons["Trigger"]?.touchedInput?.isTouched ?? false { print ("Right Trigger Touch")}
-
                             alvr_send_button(WorldTracker.rightMenuTouched, boolVal(buttons["Button Menu"]?.touchedInput?.isTouched ?? false))
-                            if buttons["Button Menu"]?.touchedInput?.isTouched ?? false { print ("Right Menu Touch")}
 
                             alvr_send_button(WorldTracker.rightSystemTouched, boolVal(buttons["Button Menu"]?.touchedInput?.isTouched ?? false))
                             alvr_send_button(WorldTracker.rightMenuClick, boolVal(buttons["Button Menu"]?.pressedInput.isPressed ?? false))
