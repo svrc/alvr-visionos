@@ -22,7 +22,6 @@ struct GlobalSettings: Codable {
     var chromaKeyColorB: Float = 16.0 / 255.0
     var dismissWindowOnEnter: Bool = true
     var emulatedPinchInteractions: Bool = false
-    var dontShowAWDLAlertAgain: Bool = false
     var fovRenderScale: Float = 1.0
     var forceMipmapEyeTracking = false
     var targetHandsAtRoundtripLatency = false
@@ -49,7 +48,6 @@ struct GlobalSettings: Codable {
         self.chromaKeyColorB = try container.decodeIfPresent(Float.self, forKey: .chromaKeyColorB) ?? self.chromaKeyColorB
         self.dismissWindowOnEnter = try container.decodeIfPresent(Bool.self, forKey: .dismissWindowOnEnter) ?? self.dismissWindowOnEnter
         self.emulatedPinchInteractions = try container.decodeIfPresent(Bool.self, forKey: .emulatedPinchInteractions) ?? self.emulatedPinchInteractions
-        self.dontShowAWDLAlertAgain = try container.decodeIfPresent(Bool.self, forKey: .dontShowAWDLAlertAgain) ?? self.dontShowAWDLAlertAgain
         self.fovRenderScale = try container.decodeIfPresent(Float.self, forKey: .fovRenderScale) ?? self.fovRenderScale
         self.forceMipmapEyeTracking = try container.decodeIfPresent(Bool.self, forKey: .forceMipmapEyeTracking) ?? self.forceMipmapEyeTracking
         self.targetHandsAtRoundtripLatency = try container.decodeIfPresent(Bool.self, forKey: .targetHandsAtRoundtripLatency) ?? self.targetHandsAtRoundtripLatency

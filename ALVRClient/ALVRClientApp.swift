@@ -3,7 +3,6 @@
 //
 // High-level application stuff, notably includes:
 // - Changelogs (incl app version checks)
-// - The AWDL alert
 // - GlobalSettings save/load hooks
 // - Each different space:
 //   - DummyImmersiveSpace: Literally just fetches FOV information/view transforms and exits

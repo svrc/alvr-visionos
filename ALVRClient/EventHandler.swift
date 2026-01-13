@@ -8,7 +8,6 @@
 // Other notable things include:
 // - mDNS/Bonjour management (handleMdnsBroadcasts)
 // - Connection flavor text and versioning info for Entry UI
-// - AWDL detection (pollNALs)
 // - The main event thread (handleAlvrEvents)
 //
 
@@ -135,6 +134,7 @@ class EventHandler: ObservableObject {
     var av1InstantiatedForReal = false
     var frameQueueLock = NSObject()
 
+    var defaultRefreshRate = (VTIsHardwareDecodeSupported(kCMVideoCodecType_AV1) ? 120 : 90)
     var frameQueue = [QueuedFrame]()
     var frameQueueLastTimestamp: UInt64 = 0
     var frameQueueLastImageBuffer: CVImageBuffer? = nil
@@ -172,7 +172,6 @@ class EventHandler: ObservableObject {
     var stutterSampleStart = 0.0
     var stutterEventsCounted = 0
     var lastStutterTime = 0.0
-    var awdlAlertPresented = false
     var audioIsOff = false
     var needsEncoderReset = true
     var encodingGamma: Float = 1.0
@@ -239,13 +238,13 @@ class EventHandler: ObservableObject {
         framesSinceLastDecode = 0
         lastIpd = -1
         lastQueuedFrame = nil
-        
+        //inputRunning = false
         //outgoingWorker.stopWorkers()
         
         updateConnectionState(.disconnected)
     }
     
-    // Currently unused
+    // Used all the time lol
     func handleHeadsetRemovedOrReentry() {
         print("EventHandler.handleHeadsetRemovedOrReentry")
         lastIpd = -1
@@ -255,6 +254,7 @@ class EventHandler: ObservableObject {
         lastRequestedTimestamp = 0
         lastSubmittedTimestamp = 0
         lastQueuedFrame = nil
+       // inputRunning = false
     }
     
     // Various hacks to be performed when the headset is removed or the app is exiting.
@@ -448,42 +448,11 @@ class EventHandler: ObservableObject {
         // If we're receiving NALs timestamped from >400ms ago, stop decoding them
         // to prevent a cascade of needless decoding lag
         let ns_diff_from_last_req_ts = self.lastRequestedTimestamp > timestamp ? self.lastRequestedTimestamp &- timestamp : 0
-        let lagSpiked = (ns_diff_from_last_req_ts > 1000*1000*600 && self.framesSinceLastIDR > 90*2)
-        
-        if CACurrentMediaTime() - self.stutterSampleStart >= 60.0 {
-            print("Stuttter events in the last minute:", self.stutterEventsCounted)
-            self.stutterSampleStart = CACurrentMediaTime()
-            
-            if self.stutterEventsCounted >= 50 {
-                print("AWDL detected!")
-                if ALVRClientApp.gStore.settings.dontShowAWDLAlertAgain {
-                    print("User doesn't want to see the alert.")
-                }
-                else {
-                    /*DispatchQueue.main.async {
-                        if self.awdlAlertPresented {
-                            return
-                        }
-                        self.awdlAlertPresented = true
-                        
-                        // Not super kosher but I don't see another way.
-                        ALVRClientApp.shared.openWindow(id: "AWDLAlert")
-                    }*/
-                }
-            }
-            
-            self.stutterEventsCounted = 0
-        }
-        if ns_diff_from_last_req_ts > 1000*1000*40 {
-            if (CACurrentMediaTime() - self.lastStutterTime > 0.25 && CACurrentMediaTime() - self.lastStutterTime < 10.0) || ns_diff_from_last_req_ts > 1000*1000*100 {
-                self.stutterEventsCounted += 1
-                //print(ns_diff_from_last_req_ts, CACurrentMediaTime() - lastStutterTime)
-            }
-            self.lastStutterTime = CACurrentMediaTime()
-        }
+        let lagSpiked = (ns_diff_from_last_req_ts > 1000*1000*600 && self.framesSinceLastIDR > self.defaultRefreshRate*2)
+       
         // TODO: adjustable framerate
         // TODO: maybe also call this if we fail to decode for too long.
-        if self.lastRequestedTimestamp != 0 && (lagSpiked || self.framesSinceLastDecode > 90*2) {
+        if self.lastRequestedTimestamp != 0 && (lagSpiked || self.framesSinceLastDecode > self.defaultRefreshRate*2) {
             objc_sync_exit(self.frameQueueLock)
 
             print("Handle spike! lagSpiked=\(lagSpiked) lastRequestedTimestamp=\(self.lastRequestedTimestamp), timestamp=\(timestamp), framesSinceLastDecode=\(self.framesSinceLastDecode) framesSinceLastIDR=\(self.framesSinceLastIDR) ns_diff_from_last_req_ts=\(ns_diff_from_last_req_ts)")

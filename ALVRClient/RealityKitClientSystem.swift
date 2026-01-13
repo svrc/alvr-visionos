@@ -30,7 +30,10 @@ import Metal
 import MetalKit
 import Spatial
 import AVFoundation
+import VideoToolbox
 
+
+let defaultRefreshRate = (VTIsHardwareDecodeSupported(kCMVideoCodecType_AV1) ? 120.0 : 90.0)
 let vrrGridSizeX = 59+1
 let vrrGridSizeY = 57+1
 let renderWidth = Int(1888)
@@ -77,8 +80,8 @@ struct VrrPlaneVertex {
 class VisionProVsyncPrediction: NSObject, ObservableObject {
     var nextFrameTime: TimeInterval = 0.0
 
-    var vsyncDelta: Double = (1.0 / 90.0)
-    var vsyncLatency: Double = (1.0 / 90.0) * 2
+    var vsyncDelta: Double = (1.0 / defaultRefreshRate)
+    var vsyncLatency: Double = (1.0 / defaultRefreshRate) * 2
     var lastVsyncTime: Double = 0.0
     var rkAvgRenderTime: Double = 0.014
     
@@ -1116,7 +1119,7 @@ class RealityKitClientSystemCorrectlyAssociated : System {
         }
         // Just in case(tm)
         if !currentHzAvg.isFinite || currentHzAvg.isNaN {
-            currentHzAvg = 90.0
+            currentHzAvg = defaultRefreshRate
         }
 
         // RealityKit automatically calls this every frame for every scene.

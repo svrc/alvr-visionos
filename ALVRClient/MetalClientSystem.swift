@@ -71,7 +71,10 @@ class MetalClientSystem {
                 }
                 break
             } else if layerRenderer.state == .paused {
+                print("Layer is paused")
                 layerRenderer.waitUntilRunning()
+                print("Layer is running again")
+                EventHandler.shared.handleHeadsetEntered()
                 //EventHandler.shared.handleHeadsetRemovedOrReentry()
                 continue
             } else {

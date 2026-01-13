@@ -989,7 +989,8 @@ struct VideoHandler {
             return
         }
         
-        let refreshRate = Float(ALVRClientApp.gStore.settings.streamFPS) ?? 90
+        let refreshRate = Float(ALVRClientApp.gStore.settings.streamFPS) ?? (VTIsHardwareDecodeSupported(kCMVideoCodecType_AV1) ? 120.0 : 90.0)
+        
         print("Setting refresh rate preference to:", refreshRate)
         
         DispatchQueue.main.async {
