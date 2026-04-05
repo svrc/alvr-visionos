@@ -567,7 +567,8 @@ class WorldTracker {
                     } catch {
                         print("Error during accessory initialization: \(error)")
                     }
-                    if detectedPsvr {
+                    if detectedPsvr && EventHandler.shared.isHostVersionAtLeast(20, 14, 2) {
+                        print ("Sending PSVR2 Interaction Profile since host is > 20.14.1")
                         alvr_send_active_interaction_profile(WorldTracker.deviceIdLeftHand, WorldTracker.psvrInteractionProfile)
                         alvr_send_active_interaction_profile(WorldTracker.deviceIdRightHand, WorldTracker.psvrInteractionProfile)
                     }

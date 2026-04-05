@@ -616,7 +616,7 @@ class Renderer {
         
         guard let frame = layerRenderer!.queryNextFrame() else { return }
         guard let timing = frame.predictTiming() else { return }
-        
+
         frame.startUpdate()
         frame.endUpdate()
         LayerRenderer.Clock().wait(until: timing.optimalInputTime)
@@ -624,7 +624,7 @@ class Renderer {
         
         roundTripRenderTime = CACurrentMediaTime() - lastRoundTripRenderTimestamp
         lastRoundTripRenderTimestamp = CACurrentMediaTime()
-        
+
         let startPollTime = CACurrentMediaTime()
         while true {
             sched_yield()
@@ -813,6 +813,8 @@ class Renderer {
         let framePreviouslyPredictedPose = queuedFrame != nil ? WorldTracker.shared.convertSteamVRViewPose(queuedFrame!.viewParams) : nil
         
         // Do NOT move this, just in case, because DeviceAnchor is wonkey and every DeviceAnchor mutates each other.
+        // Only send tracking for non-reprojected frames to match the server's encode rate
+        // (avoids sending 120Hz tracking when server is at 90Hz)
         if EventHandler.shared.alvrInitialized && EventHandler.shared.lastIpd != -1 {
             if #available(visionOS 2.0, *) {
                 EventHandler.shared.viewTransforms = [fixTransform(mainDrawable.views[0].transform), mainDrawable.views.count > 1 ? fixTransform(mainDrawable.views[1].transform) : fixTransform(mainDrawable.views[0].transform)]
@@ -821,11 +823,11 @@ class Renderer {
             // Since pupil swim is purely an axial thing, maybe we can just timewarp the view transforms as well idk
             let viewFovs = EventHandler.shared.viewFovs
             let viewTransforms = EventHandler.shared.viewTransforms
-            
+
             let targetTimestamp = vsyncTime// + (Double(min(alvr_get_head_prediction_offset_ns(), WorldTracker.maxPrediction)) / Double(NSEC_PER_SEC))
             let reportedTargetTimestamp = vsyncTime
             var anchorTimestamp = vsyncTime// + (Double(min(alvr_get_head_prediction_offset_ns(), WorldTracker.maxPrediction)) / Double(NSEC_PER_SEC))//LayerRenderer.Clock.Instant.epoch.duration(to: mainDrawable.frameTiming.trackableAnchorTime).timeInterval
-            
+
             if !ALVRClientApp.gStore.settings.targetHandsAtRoundtripLatency {
                 if #available(visionOS 2.0, *) {
                     anchorTimestamp = LayerRenderer.Clock.Instant.epoch.duration(to: mainDrawable.frameTiming.trackableAnchorTime).timeInterval
@@ -834,7 +836,7 @@ class Renderer {
                     anchorTimestamp = LayerRenderer.Clock.Instant.epoch.duration(to: mainDrawable.frameTiming.renderingDeadline).timeInterval
                 }
             }
-            
+
             WorldTracker.shared.sendTracking(viewTransforms: viewTransforms, viewFovs: viewFovs, targetTimestamp: targetTimestamp, reportedTargetTimestamp: reportedTargetTimestamp, anchorTimestamp: anchorTimestamp, delay: 0.0)
         }
         
@@ -850,6 +852,7 @@ class Renderer {
                 
                 //print("Finished:", queuedFrame!.timestamp)
                 alvr_report_submit(queuedFrame!.timestamp, vsyncTimeNs &- currentTimeNs)
+
                 EventHandler.shared.lastSubmittedTimestamp = queuedFrame!.timestamp
             }
         }
@@ -857,7 +860,7 @@ class Renderer {
         // List of reasons to not display a frame
         var frameIsSuitableForDisplaying = true
         //print(EventHandler.shared.lastIpd, WorldTracker.shared.worldTrackingAddedOriginAnchor, EventHandler.shared.framesRendered)
-        if EventHandler.shared.lastIpd == -1 || EventHandler.shared.framesRendered < 90 {
+        if EventHandler.shared.lastIpd == -1 || EventHandler.shared.framesRendered < Int(refreshRate) {
             // Don't show frame if we haven't sent the view config and received frames
             // with that config applied.
             frameIsSuitableForDisplaying = false
@@ -892,7 +895,7 @@ class Renderer {
             
             if isReprojected {
                 reprojectedFramesInARow += 1
-                if reprojectedFramesInARow > 90 {
+                if reprojectedFramesInARow > Int(refreshRate) {
                     fadeInOverlayAlpha += 0.02
                 }
             }
