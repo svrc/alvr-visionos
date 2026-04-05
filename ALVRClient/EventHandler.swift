@@ -955,11 +955,6 @@ class EventHandler: ObservableObject {
         }
     }
 
-    func isHostVersionAtLeast(_ major: Int, _ minor: Int, _ revision: Int) -> Bool {
-        if hostAlvrMajor != major { return hostAlvrMajor > major }
-        if hostAlvrMinor != minor { return hostAlvrMinor > minor }
-        return hostAlvrRevision >= revision
-    }
 }
 
 enum ConnectionState {
